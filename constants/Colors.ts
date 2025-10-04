@@ -1,41 +1,38 @@
-const tintColorLight = '#3b82f6'; // Blue
-const tintColorDark = '#60a5fa'; // Lighter blue for dark mode
+// constants/colors.ts
 
-export default {
-  light: {
-    text: '#1e293b', // Dark slate
-    background: '#f8fafc', // Light gray background
-    tint: tintColorLight,
-    tabIconDefault: '#94a3b8', // Medium gray
-    tabIconSelected: tintColorLight,
-    // Health-focused colors
-    primary: '#3b82f6', // Blue
-    secondary: '#10b981', // Green
-    accent: '#06b6d4', // Cyan
-    success: '#10b981', // Green
-    warning: '#f59e0b', // Amber
-    error: '#ef4444', // Red
-    surface: '#ffffff', // White
-    surfaceVariant: '#f1f5f9', // Light gray
-    textSecondary: '#64748b', // Medium gray
-    textTertiary: '#94a3b8', // Light gray
-  },
-  dark: {
-    text: '#f1f5f9', // Light gray
-    background: '#0f172a', // Dark slate
-    tint: tintColorDark,
-    tabIconDefault: '#64748b', // Medium gray
-    tabIconSelected: tintColorDark,
-    // Health-focused colors for dark mode
-    primary: '#60a5fa', // Lighter blue
-    secondary: '#34d399', // Lighter green
-    accent: '#22d3ee', // Lighter cyan
-    success: '#34d399', // Lighter green
-    warning: '#fbbf24', // Lighter amber
-    error: '#f87171', // Lighter red
-    surface: '#1e293b', // Dark slate
-    surfaceVariant: '#334155', // Medium slate
-    textSecondary: '#94a3b8', // Medium gray
-    textTertiary: '#64748b', // Darker gray
-  },
-};
+const colors = {
+    background: '#F8FAFC',
+    card: '#FFFFFF',
+    text: '#0F172A',
+    primary: '#1E63F3',
+    primaryHover: '#1556D8',
+    border: '#E5E7EB',
+    success: '#16A34A',
+    warning: '#F59E0B',
+    danger: '#DC2626',
+    gray100: '#F3F4F6',
+    gray200: '#E5E7EB',
+    gray300: '#D1D5DB',
+    gray400: '#9CA3AF',
+    gray500: '#6B7280',
+    gray600: '#4B5563',
+    gray700: '#374151',
+    gray800: '#1F2937',
+    gray900: '#111827',
+    teal500: '#00C9A7',
+    blue600: '#1E63F3',
+    orange100: '#FED7AA',
+    orange500: '#F97316',
+    orange600: '#EA580C',
+    green100: '#DCFCE7',
+    green600: '#16A34A',
+    blue100: '#DBEAFE',
+    purple100: '#F3E8FF',
+    purple600: '#9333EA',
+    red100: '#FEE2E2',
+    red600: '#DC2626',
+    yellow100: '#FEF3C7',
+    yellow600: '#D97706',
+  };
+  
+  export default colors;

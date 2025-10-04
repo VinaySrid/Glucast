@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Glucast",
-    "slug": "Glucast",
+    "slug": "glucast",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -33,6 +33,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "supabaseUrl": "https://zuqyvnedrbroxaaiohkn.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1cXl2bmVkcmJyb3hhYWlvaGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5MTM3MjcsImV4cCI6MjA3MTQ4OTcyN30.KLnmnFz2g5u_bqr9wFBa6IB8MB6adu_-IUegPata4qU"
     }
   }
 }
