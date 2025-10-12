@@ -15,18 +15,33 @@ export default function HomeScreen() {
   const [recentMeals, setRecentMeals] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchRecentMeals = async () => {
-      if (!user) return;
-      const { data, error } = await supabase
-        .from('meals')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false })
-        .limit(3);
-      if (!error && data) setRecentMeals(data);
-    };
-    fetchRecentMeals();
-  }, [user]);
+    if (!user) return;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('meals')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('date', { ascending: false })
+          .limit(3);
+
+        if (error) {
+          console.error('Error fetching recent meals:', error);
+          return;
+        }
+
+        if (data && Array.isArray(data)) {
+          console.log('✅ Recent meals fetched:', data.length);
+          setRecentMeals(data);
+        } else {
+          console.warn('⚠️ No recent meals found for this user');
+          setRecentMeals([]);
+        }
+      } catch (err) {
+        console.error('Unexpected error fetching meals:', err);
+      }
+    })();
+  }, [user, supabase]);
 
   return (
     <SafeAreaView style={{ flex:1, backgroundColor: colors.background }}>

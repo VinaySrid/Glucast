@@ -22,7 +22,7 @@ type Meal = {
 
 export default function TimelineScreen() {
   const router = useRouter();
-  const [selectedPeriod, setSelectedPeriod] = useState<'Day'|'Week'|'Month'>('Day');
+  const [selectedPeriod, setSelectedPeriod] = useState<'All'|'Day'|'Week'|'Month'>('Day');
   const [meals, setMeals] = useState<Meal[]>([]);
 
   const handleDeleteMeal = async (id: string) => {
@@ -95,24 +95,31 @@ export default function TimelineScreen() {
 
   const now = new Date();
   let filteredMeals = meals;
-  if (selectedPeriod === 'Day') {
+  if (selectedPeriod === 'All') {
+    filteredMeals = meals;
+  } else if (selectedPeriod === 'Day') {
     filteredMeals = meals.filter(m => {
       const d = new Date(m.date);
       return d.toDateString() === now.toDateString();
     });
   } else if (selectedPeriod === 'Week') {
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 7);
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
     filteredMeals = meals.filter(m => {
       const d = new Date(m.date);
-      return d >= startOfWeek && d < endOfWeek;
+      const isInWeek = d >= sevenDaysAgo && d < now;
+      const isSameDay = d.toDateString() === now.toDateString();
+      return isInWeek && !isSameDay;
     });
   } else if (selectedPeriod === 'Month') {
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
     filteredMeals = meals.filter(m => {
       const d = new Date(m.date);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      const isSameMonth = d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      const isSameDay = d.toDateString() === now.toDateString();
+      const isPastSevenDays = d >= sevenDaysAgo && d < now;
+      return isSameMonth && !isSameDay && !isPastSevenDays;
     });
   }
 
@@ -121,7 +128,7 @@ export default function TimelineScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <View style={{ flex:1 }}>
         <View style={{ flexDirection:'row', backgroundColor: colors.card, margin:16, borderRadius:12, padding:4 }}>
-          {(['Day','Week','Month'] as const).map(p => (
+          {(['Day','Week','Month','All'] as const).map(p => (
             <TouchableOpacity key={p} onPress={() => setSelectedPeriod(p)}
               style={{ flex:1, paddingVertical:12, alignItems:'center', backgroundColor: selectedPeriod===p? colors.primary:'transparent', borderRadius:8 }}>
               <Text style={{ color: selectedPeriod===p? 'white': colors.text, fontWeight: selectedPeriod===p? '600':'400' }}>{p}</Text>
