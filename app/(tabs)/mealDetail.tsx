@@ -44,7 +44,7 @@ export default function MealDetailScreen() {
           </View>
         )}
         <Text style={{ fontSize:20, fontWeight:'600', marginBottom:8 }}>
-          {parsedMeal.description || 'Meal'}
+          {parsedMeal.name || parsedMeal.description || 'Meal'}
         </Text>
         <Text style={{ fontSize:16, marginBottom:16 }}>
           {new Date(parsedMeal.date).toLocaleString()}
@@ -52,10 +52,11 @@ export default function MealDetailScreen() {
 
         <Text style={{ fontSize:18, fontWeight:'600', marginBottom:8 }}>Ingredients:</Text>
         {parsedMeal.items && parsedMeal.items.map((it: any, idx: number) => {
-          // Compose ingredient line with name, amount, name_user/unit_name, and total grams if present
+          // Compose ingredient line with name, amount, "portion", and total grams if present
           let ingredientLine = `• ${it.name}`;
           if (it.amount !== undefined && it.amount !== null) {
-            ingredientLine += ` - ${it.amount}`;
+            const portionText = Number(it.amount) === 1 ? 'portion' : 'portions';
+            ingredientLine += ` - ${it.amount} ${portionText}`;
           }
           if (it.name_user) {
             ingredientLine += ` ${it.name_user}`;

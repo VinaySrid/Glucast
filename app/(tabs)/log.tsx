@@ -450,10 +450,15 @@ Follow these instructions carefully:
    - For example:
      - “honey lemon chicken” → detect “chicken, cooked”, “honey”, and “lemon juice”.
      - “garlic butter shrimp” → detect “shrimp, cooked”, “garlic”, and “butter”.
+     - Spaghetti with tomato sauce → detect "spaghetti, cooked”, and "tomato sauce".
    - Even if the meal name includes a combined descriptor (like “honey lemon chicken”), you must **separate the components whenever they are ingredients or flavoring agents that contribute calories or nutrients.**
    - Example: “steak tacos” → detect “corn tortillas”, “grilled steak”, “diced onions”, “guacamole”, “lime wedge”.
+   - When you see phrases like “with vegetables”, “mixed vegetables”, “and veggies”, or similar, **separate the vegetables from the main dish**. For example:
+     - “fried rice with vegetables” → detect “fried rice” and “mixed vegetables”.
+     - “chicken stir fry with vegetables” → detect “chicken, cooked” and “mixed vegetables”.
    - Do not return “steak tacos” as one item. Break them into individual components that could each be found in USDA.
    - Do NOT include invisible ingredients like salt, pepper, or oil unless they are clearly visible.
+   - Always break apart combination or prepared meals (like “General Tso’s tofu”, “chicken alfredo”, “fried rice”, “pasta primavera”) into individual components such as protein, sauce, vegetables, rice, or noodles. Do not treat such dishes as a single item.
 
 2. For each visible ingredient, include these fields:
    - \`name_user\`: user-friendly label (e.g., “Corn Tortillas”)
@@ -467,6 +472,12 @@ Follow these instructions carefully:
    - \`total_grams\`: total grams = amount × grams_per_unit (must be consistent)
    - \`is_branded\`: boolean. Set to true if the food is a recognizable packaged or brand-name item (e.g., Doritos, Coke, Snickers, McDonald's fries). Set to false for generic or unbranded foods (e.g., apple, rice, tortilla).
    - Use **g for solids** and **ml for liquids**.
+Special rule for amounts:
+- If the food is countable (like tortillas, eggs, nuggets, apples, slices of bread), return the count in the "amount" field and the per-unit weight in grams in "grams_per_unit".
+  Example: 3 tortillas → "amount": 3, "grams_per_unit": 30, "total_grams": 90.
+- If the food is NOT countable (like diced steak, rice, sauce, soup, diced tomatoes, mashed potatoes, guacamole), always set "amount" to 1 and set "grams_per_unit" equal to the total grams detected for that item.
+  Example: diced tomatoes (120 g total) → "amount": 1, "grams_per_unit": 120, "total_grams": 120.
+- Never guess counts for uncountable foods. Default to amount = 1 for those.
 
 3. When something is measured by weight (like “150 g steak”), include both:
    - \`amount\`: numeric quantity (e.g., 150)
@@ -1151,8 +1162,7 @@ Do not include or guess a "data_type" field in your response. Your output should
   const [expandedDropdowns, setExpandedDropdowns] = useState<boolean[]>([]);
 
   // Collapsible state for USDA portion options
-  const [showPortions, setShowPortions] = useState<{ [key: number]: boolean }>({});
-
+  const [showPortions, setShowPortions] = useState<Record<string, boolean>>({});
   // Collapsed state for Detected Items section
   const [detectedItemsCollapsed, setDetectedItemsCollapsed] = useState(false);
 
@@ -1358,19 +1368,8 @@ Do not include or guess a "data_type" field in your response. Your output should
               {detectedItemsCollapsed ? null : (
                 <>
                   {editableItems.map((item, i) => (
-                    <View
-                      key={i}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        paddingVertical: 12,
-                        borderBottomWidth: i < editableItems.length - 1 ? 1 : 0,
-                        borderBottomColor: colors.border,
-                        paddingHorizontal: 4,
-                        gap: 8,
-                      }}
-                    >
+                    <React.Fragment key={i}>
+                    <View style={{ marginBottom: 16 }}>
                       <View style={{ flex: 1 }}>
                         {editingIndex === i ? (
                           <View
@@ -1554,11 +1553,14 @@ Do not include or guess a "data_type" field in your response. Your output should
                               <Text style={{ fontSize: 14, color: colors.text }}>{item.grams_per_unit || '—'} g each</Text>
                             </View>
                             {/* Amount row */}
+                            {/* Amount row */}
                             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                              <Text style={{ color: colors.text, opacity: 0.6, width: 100 }}>Amount:</Text>
+                            <Text style={{ color: colors.text, opacity: 0.6, width: 100 }}>Amount:</Text>
                               <Text style={{ fontSize: 14, color: colors.text }}>
-                                {item.amount || '—'} {item.unit || (item as any)?.raw?.unit || ''}
-                              </Text>
+                              {item.amount
+                              ? `${item.amount} portion${item.amount === '1' ? '' : 's'} of ${item.name || (item as any)?.raw?.name || 'portion'}`
+                              : '—'}
+                             </Text>
                             </View>
                             {/* Total amount row */}
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -1660,27 +1662,28 @@ Do not include or guess a "data_type" field in your response. Your output should
                           </View>
                         )}
                       </View>
-                      <View style={{ flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                      {/* Edit & Delete Icons directly below card */}
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          marginTop: 10,
+                          marginBottom: 12,
+                        }}
+                      >
                         {editingIndex === i ? (
                           <TouchableOpacity
                             onPress={() => setEditingIndex(null)}
-                            style={{
-                              padding: 6,
-                              borderRadius: 6,
-                              backgroundColor: 'transparent',
-                            }}
+                            style={{ padding: 6, marginHorizontal: 10 }}
                             accessibilityLabel="Confirm"
                           >
-                            <Ionicons name="checkmark" size={22} color={colors.success || "#2ecc40"} />
+                            <Ionicons name="checkmark" size={22} color="#2ecc40" />
                           </TouchableOpacity>
                         ) : (
                           <TouchableOpacity
                             onPress={() => setEditingIndex(i)}
-                            style={{
-                              padding: 6,
-                              borderRadius: 6,
-                              backgroundColor: 'transparent',
-                            }}
+                            style={{ padding: 6, marginHorizontal: 10 }}
                             accessibilityLabel="Edit"
                           >
                             <Ionicons name="pencil" size={20} color={colors.text} />
@@ -1693,18 +1696,25 @@ Do not include or guess a "data_type" field in your response. Your output should
                               editIdx === i ? null : editIdx !== null && editIdx > i ? editIdx - 1 : editIdx
                             );
                           }}
-                          style={{
-                            padding: 6,
-                            borderRadius: 6,
-                            backgroundColor: 'transparent',
-                            marginRight: 2,
-                          }}
+                          style={{ padding: 6, marginHorizontal: 10 }}
                           accessibilityLabel="Delete"
                         >
                           <Ionicons name="trash-outline" size={22} color="#d11a2a" />
                         </TouchableOpacity>
                       </View>
                     </View>
+                    {/* Separator line between items, except after last */}
+                    {i < editableItems.length - 1 && (
+                      <View
+                      style={{
+                      height: 1.5,
+                      backgroundColor: colors.border || '#000',
+                      opacity: 0.8,
+                      marginVertical: 10,
+                      }}
+                      />
+                      )}
+                    </React.Fragment>
                   ))}
                   <TouchableOpacity onPress={addItem} style={{ marginTop:12 }}>
                     <Text style={{ color: colors.primary, fontWeight:'600' }}>+ Add Ingredient</Text>
@@ -1715,8 +1725,8 @@ Do not include or guess a "data_type" field in your response. Your output should
 
 {/* Nutrition/macros card - collapsible */}
 <Card style={{ marginBottom: 20 }}>
-  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', marginBottom: 12 }}>
-    <TouchableOpacity onPress={() => setMacrosCollapsed(!macrosCollapsed)} style={{ marginRight: 8 }}>
+<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', marginBottom: 12 }}>
+      <TouchableOpacity onPress={() => setMacrosCollapsed(!macrosCollapsed)} style={{ marginRight: 8 }}>
       <Ionicons
         name={macrosCollapsed ? 'add-circle-outline' : 'remove-circle-outline'}
         size={22}
@@ -1799,6 +1809,85 @@ Do not include or guess a "data_type" field in your response. Your output should
               Brand: {ingredientMacros[i]?.brandName}
             </Text>
           )}
+                      {/* Alternate USDA Options Dropdown */}
+{Array.isArray(ingredientOptions[i]) && ingredientOptions[i].length > 0 && (
+  <View style={{ marginTop: 8 }}>
+    <TouchableOpacity
+      onPress={() =>
+        setShowPortions(prev => ({ ...prev, [`usda_${i}`]: !prev[`usda_${i}`] }))
+      }
+    >
+      <Text style={{ fontSize: 14, color: colors.primary, fontWeight: '600' }}>
+        Alternate USDA Options {showPortions[`usda_${i}`] ? '▲' : '▼'}
+      </Text>
+    </TouchableOpacity>
+
+    {showPortions[`usda_${i}`] && (
+      <View style={{ marginTop: 6, paddingLeft: 6 }}>
+        {ingredientOptions[i].map((opt, idx) => (
+          <TouchableOpacity
+            key={idx}
+            onPress={async () => {
+              const result = await fetchFoodData(opt.description, opt.dataType);
+              if (!result || (result as any).topResults) return;
+
+              const macros = result as {
+                calories: number | null;
+                protein: number | null;
+                carbs: number | null;
+                fat: number | null;
+                fiber: number | null;
+                sugar: number | null;
+                servingSize?: number;
+                servingSizeUnit?: string;
+              };
+
+              const totalGrams = parseFloat(editableItems[i]?.total_grams ?? '0');
+              const scale = totalGrams > 0 ? totalGrams / 100 : 1;
+
+              const scaled = {
+                ...macros,
+                calories: +(macros.calories! * scale).toFixed(2),
+                protein: +(macros.protein! * scale).toFixed(2),
+                carbs: +(macros.carbs! * scale).toFixed(2),
+                fat: +(macros.fat! * scale).toFixed(2),
+                fiber: +(macros.fiber! * scale).toFixed(2),
+                sugar: +(macros.sugar! * scale).toFixed(2),
+                usdaDescription: opt.description,
+                usdaDataType: opt.dataType,
+              };
+
+              setIngredientBaseMacros(prev => {
+                const arr = [...prev];
+                arr[i] = macros;
+                return arr;
+              });
+
+              setIngredientMacros(prev => {
+                const arr = [...prev];
+                arr[i] = scaled;
+                return arr;
+              });
+
+              setEditableItems(prev => {
+                const arr = [...prev];
+                arr[i].name_usda = opt.description;
+                return arr;
+              });
+
+              // Collapse after selecting
+              setShowPortions(prev => ({ ...prev, [`usda_${i}`]: false }));
+            }}
+          >
+            <Text style={{ fontSize: 13, color: colors.text, marginVertical: 2 }}>
+              • {opt.description} ({opt.dataType})
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    )}
+  </View>
+)}
          
         </View>
       ))}

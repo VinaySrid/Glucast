@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, View, Text, TextInput, Alert, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, Alert, TouchableOpacity, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import GlucasLogo from '../../components/GlucasLogo';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function Signup() {
   const router = useRouter();
@@ -12,7 +13,7 @@ export default function Signup() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
+  const [gender, setGender] = useState('Male');
   const [weight, setWeight] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -86,21 +87,20 @@ export default function Signup() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={80} // adjust as needed for header spacing
+      <KeyboardAwareScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
+        keyboardShouldPersistTaps="always"
+        scrollEventThrottle={16}
+        keyboardDismissMode="none"
+        onScroll={event => {
+          const y = event.nativeEvent.contentOffset.y;
+          if (y <= 0) {
+            Keyboard.dismiss();
+          }
+        }}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
-            onScroll={(e) => {
-              if (e.nativeEvent.contentOffset.y <= 0) {
-                Keyboard.dismiss();
-              }
-            }}
-            scrollEventThrottle={16}
-          >
         <View style={{ position: 'absolute', top: 50, left: 20, zIndex: 1 }}>
           <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
             <Ionicons name="arrow-back" size={24} color="black" />
@@ -108,6 +108,39 @@ export default function Signup() {
         </View>
         <View style={{ alignItems: 'center', marginBottom: 40 }}>
           <GlucasLogo />
+        </View>
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ fontSize: 16, marginBottom: 8 }}>Email</Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={{
+              borderWidth: 1,
+              borderColor: '#ccc',
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              fontSize: 16,
+            }}
+          />
+        </View>
+        <View style={{ marginBottom: 40 }}>
+          <Text style={{ fontSize: 16, marginBottom: 8 }}>Password</Text>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={{
+              borderWidth: 1,
+              borderColor: '#ccc',
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              fontSize: 16,
+            }}
+          />
         </View>
         <View style={{ marginBottom: 20 }}>
           <Text style={{ fontSize: 16, marginBottom: 8 }}>First Name</Text>
@@ -159,19 +192,29 @@ export default function Signup() {
         </View>
         <View style={{ marginBottom: 20 }}>
           <Text style={{ fontSize: 16, marginBottom: 8 }}>Gender</Text>
-          <TextInput
-            value={gender}
-            onChangeText={setGender}
-            autoCapitalize="words"
-            style={{
-              borderWidth: 1,
-              borderColor: '#ccc',
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              fontSize: 16,
-            }}
-          />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            {['Male', 'Female', 'Other'].map(option => {
+              const isSelected = gender === option;
+              return (
+                <TouchableOpacity
+                  key={option}
+                  onPress={() => setGender(option)}
+                  style={{
+                    flex: 1,
+                    marginHorizontal: 4,
+                    paddingVertical: 10,
+                    borderRadius: 8,
+                    backgroundColor: isSelected ? '#007bff' : 'white',
+                    borderWidth: 1,
+                    borderColor: isSelected ? '#007bff' : 'gray',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ color: isSelected ? 'white' : 'black', fontSize: 16 }}>{option}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
         <View style={{ marginBottom: 20 }}>
           <Text style={{ fontSize: 16, marginBottom: 8 }}>Weight</Text>
@@ -179,39 +222,6 @@ export default function Signup() {
             value={weight}
             onChangeText={setWeight}
             keyboardType="numeric"
-            style={{
-              borderWidth: 1,
-              borderColor: '#ccc',
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              fontSize: 16,
-            }}
-          />
-        </View>
-        <View style={{ marginBottom: 20 }}>
-          <Text style={{ fontSize: 16, marginBottom: 8 }}>Email</Text>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={{
-              borderWidth: 1,
-              borderColor: '#ccc',
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              fontSize: 16,
-            }}
-          />
-        </View>
-        <View style={{ marginBottom: 40 }}>
-          <Text style={{ fontSize: 16, marginBottom: 8 }}>Password</Text>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
             style={{
               borderWidth: 1,
               borderColor: '#ccc',
@@ -238,9 +248,7 @@ export default function Signup() {
                 {errorMessage}
               </Text>
             ) : null}
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

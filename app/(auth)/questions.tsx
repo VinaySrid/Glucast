@@ -3,12 +3,13 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView, ScrollView, View, Text, TextInput, Alert, TouchableOpacity } from 'react-native';
 import GlucasLogo from '../../components/GlucasLogo';
 import { supabase } from '../../lib/supabase';
+import { Picker } from '@react-native-picker/picker';
 
 export default function Questions() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
+  const [gender, setGender] = useState('Male');
   const [weight, setWeight] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -84,6 +85,8 @@ export default function Questions() {
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        contentInsetAdjustmentBehavior="never"
       >
         <View style={{ alignItems: 'center', marginBottom: 40 }}>
           <GlucasLogo />
@@ -119,11 +122,22 @@ export default function Questions() {
 
         <View style={{ marginBottom: 20 }}>
           <Text>Gender</Text>
-          <TextInput
-            value={gender}
-            onChangeText={setGender}
-            style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12 }}
-          />
+          <View style={{
+            borderWidth: 1,
+            borderColor: '#ccc',
+            borderRadius: 8,
+            overflow: 'hidden',
+          }}>
+            <Picker
+              selectedValue={gender}
+              onValueChange={(itemValue) => setGender(itemValue)}
+              style={{ height: 48, width: '100%' }}
+            >
+              <Picker.Item label="Male" value="Male" />
+              <Picker.Item label="Female" value="Female" />
+              <Picker.Item label="Prefer not to say" value="Prefer not to say" />
+            </Picker>
+          </View>
         </View>
 
         <View style={{ marginBottom: 20 }}>

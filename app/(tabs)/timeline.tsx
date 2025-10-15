@@ -79,8 +79,12 @@ export default function TimelineScreen() {
               setMeals([]);
             }
           } else {
-            // Merge meals for display, but only persist unsynced meals to AsyncStorage
-            setMeals([...supabaseMeals, ...unsyncedLocalMeals]);
+            // Merge meals for display, removing duplicates by id, but only persist unsynced meals to AsyncStorage
+            const mergedMeals = [...supabaseMeals, ...unsyncedLocalMeals];
+            const uniqueMeals = mergedMeals.filter(
+              (meal, index, self) => index === self.findIndex(m => m.id === meal.id)
+            );
+            setMeals(uniqueMeals);
             // Only persist unsynced meals to AsyncStorage
             await AsyncStorage.setItem("meals", JSON.stringify(unsyncedLocalMeals));
           }
